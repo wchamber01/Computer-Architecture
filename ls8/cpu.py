@@ -16,9 +16,9 @@ class CPU:
         self.ram = [0] * 256
         self.running = True
         # self.ops = {
-        #     LDI: self.op_ldi(),
-        #     PRN: self.op_prn(),
-        #     HLT: self.op_hlt()
+        #     'LDI': self.op_ldi(),
+        #     'PRN': self.op_prn(),
+        #     'HLT': self.op_hlt()
         # }
 
     def ram_read(self, MAR):
@@ -27,18 +27,20 @@ class CPU:
     def ram_write(self, value, MDR):
         self.ram[MAR] = MDR
 
-    # def op_hlt(self):
-    #     self.pc += 1
-    #     self.running = False
-    #     # sys.exit(1)
+    def op_hlt(self):
+        self.pc += 1
+        self.running = False
+        # sys.exit(1)
 
-    # def op_ldi(self, operand_a, operand_b):
-    #     self.reg[operand_a] = operand_b
-    #     self.pc += 3
+    def op_ldi(self, operand_a, operand_b):
+        print('a:', operand_a)
+        print('b:', operand_b)
+        self.reg[operand_a] = operand_b
+        self.pc += 3
 
-    # def op_prn(self, operand_a, operand_b):
-    #     print(self.reg[operand_a])
-    #     self.pc += 2
+    def op_prn(self, operand_a):
+        print(self.reg[operand_a])
+        self.pc += 2
 
     def load(self):
         """Load a program into memory."""
@@ -92,9 +94,9 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        # HLT = 0b00000001
-        # LDI = 0b10000010
-        # PRN = 0b01000111
+        HLT = 0b00000001
+        LDI = 0b10000010
+        PRN = 0b01000111
 
         self.trace()
 
@@ -104,8 +106,25 @@ class CPU:
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
-            # if IR in self.ops:
+            # if IR in self.ops == LDI:
             #     self.ops[IR](operand_a, operand_b)
+            # elif IR in self.ops == PRN:
+            #     self.ops[IR](operand_a)
+            # elif IR in self.ops == HLT:
+            #     self.ops[IR]
             # else:
-            #     break
-            if IR ==
+            #     print('error')
+            #     sys.exit(1)
+
+            if IR == LDI:
+                self.reg[operand_a] = operand_b
+                self.pc += 3
+            elif IR == PRN:
+                print(self.reg[operand_a])
+                self.pc += 2
+            elif IR == HLT:
+                self.pc += 1
+                self.running = False
+            else:
+                print('error')
+                sys.exit(1)
