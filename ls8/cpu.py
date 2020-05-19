@@ -1,6 +1,9 @@
 """CPU functionality."""
 
 import sys
+# HLT = 0b00000001
+# LDI = 0b10000010
+# PRN = 0b01000111
 
 
 class CPU:
@@ -8,16 +11,34 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-
         self.reg = [0] * 8
         self.pc = 0
         self.ram = [0] * 256
+        self.running = True
+        # self.ops = {
+        #     LDI: self.op_ldi(),
+        #     PRN: self.op_prn(),
+        #     HLT: self.op_hlt()
+        # }
 
     def ram_read(self, MAR):
-        self.ram(MAR)
+        return self.ram[MAR]
 
     def ram_write(self, value, MDR):
-        self.write(MDR)
+        self.ram[MAR] = MDR
+
+    # def op_hlt(self):
+    #     self.pc += 1
+    #     self.running = False
+    #     # sys.exit(1)
+
+    # def op_ldi(self, operand_a, operand_b):
+    #     self.reg[operand_a] = operand_b
+    #     self.pc += 3
+
+    # def op_prn(self, operand_a, operand_b):
+    #     print(self.reg[operand_a])
+    #     self.pc += 2
 
     def load(self):
         """Load a program into memory."""
@@ -71,4 +92,20 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        # HLT = 0b00000001
+        # LDI = 0b10000010
+        # PRN = 0b01000111
+
+        self.trace()
+
+        while self.running is True:
+            IR = self.ram_read(self.pc)
+
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+
+            # if IR in self.ops:
+            #     self.ops[IR](operand_a, operand_b)
+            # else:
+            #     break
+            if IR ==
