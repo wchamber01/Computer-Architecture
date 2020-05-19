@@ -7,5 +7,9 @@ from cpu import *
 
 cpu = CPU()
 
-cpu.load()
+# if sys.argv[1] is None:
+#     print(sys.argv)
+#     print('error')
+#     sys.exit(1)
+cpu.load(sys.argv[1])
 cpu.run()
