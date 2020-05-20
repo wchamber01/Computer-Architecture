@@ -41,25 +41,25 @@ class CPU:
 
     def op_ldi(self, operand_a, operand_b):
         self.reg[operand_a] = operand_b
-        self.pc += 3
+        # self.pc += 3
 
     def op_prn(self, operand_a, operand_b):
         print('prn:', self.reg[operand_a])
-        self.pc += 2
+        # self.pc += 2
 
     def op_mul(self, operand_a, operand_b):
         self.alu('MUL', operand_a, operand_b)
-        self.pc += 3
+        # self.pc += 3
 
     def op_push(self, operand_a, operand_b):
         self.sp -= 1
         val = self.reg[operand_a]
         self.ram_write(self.sp, val)
-        self.pc += 2
+        # self.pc += 2
 
     def op_pop(self, operand_a, operand_b):
         self.reg[operand_a] = self.ram_read(self.sp)
-        self.pc += 2
+        # self.pc += 2
         self.sp += 1
 
     def load(self, filename):
@@ -130,11 +130,11 @@ class CPU:
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
-            # op_size = IR >> 6
-            # ins_set = ((IR >> 4) & 0b1) == 1
+            # This increments the pc position automatically
+            op_size = IR >> 6
+            ins_set = ((IR >> 4) & 0b1) == 1
+            if not ins_set:
+                self.pc += op_size + 1
 
             if IR in self.branchtable:
                 self.branchtable[IR](operand_a, operand_b)
-
-            # if not ins_set:
-            #     self.pc += op_size + 1
