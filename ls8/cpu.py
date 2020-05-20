@@ -5,6 +5,9 @@ HLT = 0b00000001
 LDI = 0b10000010
 PRN = 0b01000111
 MUL = 0b10100010
+PUSH = 0b01000101
+POP = 0b01000110
+CMP = 0b10100111
 
 
 class CPU:
@@ -16,36 +19,48 @@ class CPU:
         self.pc = 0
         self.ram = [0] * 256
         self.running = True
+        self.reg[7] = 0xf4
+        self.sp = self.reg[7]
         self.branchtable = {}
         self.branchtable[HLT] = self.op_hlt
         self.branchtable[LDI] = self.op_ldi
         self.branchtable[PRN] = self.op_prn
         self.branchtable[MUL] = self.op_mul
+        self.branchtable[PUSH] = self.op_push
+        self.branchtable[POP] = self.op_pop
+        # self.branchtable[CMP] = self.alu
 
     def ram_read(self, MAR):
         return self.ram[MAR]
 
-    def ram_write(self, value, MDR):
+    def ram_write(self, MAR, MDR):
         self.ram[MAR] = MDR
 
     def op_hlt(self, operand_a, operand_b):
-        self.pc += 1
         self.running = False
-        # sys.exit(1)
 
     def op_ldi(self, operand_a, operand_b):
         self.reg[operand_a] = operand_b
         self.pc += 3
 
-    def op_prn(self, operand_a):
+    def op_prn(self, operand_a, operand_b):
         print('prn:', self.reg[operand_a])
         self.pc += 2
 
     def op_mul(self, operand_a, operand_b):
-        print(operand_a)
-        print(operand_b)
-        self.reg[operand_a] = self.reg[operand_a] * self.reg[operand_b]
+        self.alu('MUL', operand_a, operand_b)
         self.pc += 3
+
+    def op_push(self, operand_a, operand_b):
+        self.sp -= 1
+        val = self.reg[operand_a]
+        self.ram_write(self.sp, val)
+        self.pc += 2
+
+    def op_pop(self, operand_a, operand_b):
+        self.reg[operand_a] = self.ram_read(self.sp)
+        self.pc += 2
+        self.sp += 1
 
     def load(self, filename):
         """Load a program into memory."""
@@ -58,17 +73,10 @@ class CPU:
                 if val == '':
                     continue
                 instruction = int(val, 2)
-                # print(instruction)
                 self.ram[address] = instruction
                 address += 1
-                # print(address)
-
-                # if string_val == '':
-                #     continue
-                # else
 
         # For now, we've just hardcoded a program:
-
         # program = [
         #     # From print8.ls8
         #     0b10000010,  # LDI R0,8
@@ -78,7 +86,6 @@ class CPU:
         #     0b00000000,
         #     0b00000001,  # HLT
         # ]
-
         # for instruction in program:
         #     self.ram[address] = instruction
         #     address += 1
@@ -88,7 +95,9 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        # elif op == "SUB": etc
+        elif op == "MUL":
+            self.reg[reg_a] = self.reg[reg_a] * self.reg[reg_b]
+        # if op == "CMP":
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -114,41 +123,18 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        # HLT = 0b00000001
-        # LDI = 0b10000010
-        # PRN = 0b01000111
-        # MUL = 0b10100010
-
-        # self.trace()
+        self.trace()
 
         while self.running is True:
             IR = self.ram_read(self.pc)
             operand_a = self.ram_read(self.pc + 1)
             operand_b = self.ram_read(self.pc + 2)
 
-            op_size = IR >> 6
-
+            # op_size = IR >> 6
             # ins_set = ((IR >> 4) & 0b1) == 1
 
-            # if IR in self.branchtable:
-            #     self.branchtable[IR](operand_a, operand_b)
+            if IR in self.branchtable:
+                self.branchtable[IR](operand_a, operand_b)
 
             # if not ins_set:
-            #     print('op_size', op_size)
             #     self.pc += op_size + 1
-
-            # if IR == LDI:
-            #     self.reg[operand_a] = operand_b
-            #     self.pc += 3
-            # elif IR == PRN:
-            #     print(self.reg[operand_a])
-            #     self.pc += 2
-            # elif IR == MUL:
-            #     self.reg[operand_a] = self.reg[operand_a] * self.reg[operand_b]
-            #     self.pc += 3
-            # elif IR == HLT:
-            #     self.pc += 1
-            #     self.running = False
-            # else:
-            #     print('error')
-            #     sys.exit(1)
