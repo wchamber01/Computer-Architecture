@@ -8,6 +8,9 @@ MUL = 0b10100010
 PUSH = 0b01000101
 POP = 0b01000110
 CMP = 0b10100111
+CALL = 0b01010000
+RET = 0b00010001
+ADD = 0b10100000
 
 
 class CPU:
@@ -28,6 +31,9 @@ class CPU:
         self.branchtable[MUL] = self.op_mul
         self.branchtable[PUSH] = self.op_push
         self.branchtable[POP] = self.op_pop
+        self.branchtable[CALL] = self.op_call
+        self.branchtable[RET] = self.op_ret
+        self.branchtable[ADD] = self.op_add
         # self.branchtable[CMP] = self.alu
 
     def ram_read(self, MAR):
@@ -62,6 +68,21 @@ class CPU:
         # self.pc += 2
         self.sp += 1
 
+    def op_call(self, operand_a, operand_b):
+        ret_addr = self.pc + 2
+        self.sp -= 1
+        self.ram_write(self.sp, ret_addr)  # write sp and pc location to ram
+        sub_addr = self.reg[operand_a]
+        self.pc = sub_addr
+
+    def op_ret(self, operand_a, operand_b):
+        ret_addr = self.ram_read(self.sp)  # set ret_addr to location in ram
+        self.sp += 1
+        self.pc = ret_addr
+
+    def op_add(self, operand_a, operand_b):
+        self.alu('ADD', operand_a, operand_b)
+
     def load(self, filename):
         """Load a program into memory."""
 
@@ -94,7 +115,7 @@ class CPU:
         """ALU operations."""
 
         if op == "ADD":
-            self.reg[reg_a] += self.reg[reg_b]
+            self.reg[reg_a] = self.reg[reg_a] + self.reg[reg_b]
         elif op == "MUL":
             self.reg[reg_a] = self.reg[reg_a] * self.reg[reg_b]
         # if op == "CMP":
@@ -138,3 +159,5 @@ class CPU:
 
             if IR in self.branchtable:
                 self.branchtable[IR](operand_a, operand_b)
+
+# SAVE WHERE WE'RE COMING FROM TO THE STACK AND SET PC TO WHERE WE'RE GOING
