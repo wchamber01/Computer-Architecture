@@ -123,6 +123,27 @@ class CPU:
         else:
             self.pc += 2
 
+    def op_and(self, operand_a, operand_b):
+        self.alu('AND', operand_a, operand_b)
+
+    def op_or(self, operand_a, operand_b):
+        self.alu('ADD', operand_a, operand_b)
+
+    def op_xor(self, operand_a, operand_b):
+        self.alu('CMP', operand_a, operand_b)
+
+    def op_not(self, operand_a, operand_b):
+        self.alu('ADD', operand_a, operand_b)
+
+    def op_shl(self, operand_a, operand_b):
+        self.alu('CMP', operand_a, operand_b)
+
+    def op_shr(self, operand_a, operand_b):
+        self.alu('ADD', operand_a, operand_b)
+
+    def op_mod(self, operand_a, operand_b):
+        self.alu('CMP', operand_a, operand_b)
+
     def load(self, filename):
         """Load a program into memory."""
 
@@ -154,17 +175,37 @@ class CPU:
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
-        if op == "ADD":
+        if op == 'ADD':
             self.reg[reg_a] = self.reg[reg_a] + self.reg[reg_b]
-        elif op == "MUL":
+        elif op == 'MUL':
             self.reg[reg_a] = self.reg[reg_a] * self.reg[reg_b]
-        elif op == "CMP":
+        elif op == 'CMP':
             if self.reg[reg_a] < self.reg[reg_b]:
                 self.fl = 0b00000100
             elif self.reg[reg_a] > self.reg[reg_b]:
                 self.fl = 0b00000010
             elif self.reg[reg_a] == self.reg[reg_b]:
                 self.fl = 0b00000001
+        elif op == 'AND':
+            self.reg[reg_a] = self.reg[reg_a] & self.reg[reg_b]
+        elif op == 'OR':
+            self.reg[reg_a] = self.reg[reg_a] | self.reg[reg_b]
+        elif op == 'XOR':
+            self.reg[reg_a] = self.reg[reg_a] ^ self.reg[reg_b]
+        elif op == 'NOT':
+            self.reg[reg_a] = ~self.reg[reg_a]
+        elif op == 'SHL':
+            self.reg[reg_a] = self.reg[reg_a] << self.reg[reg_b]
+        elif op == 'SHR':
+            self.reg[reg_a] = self.reg[reg_a] >> self.reg[reg_b]
+        elif op == 'MOD':
+            if self.reg[reg_b] == 0:
+                print('ERROR: divide by 0')
+                self.op_hlt()
+            else:
+                remainder = self.reg[reg_a] % self.reg[reg_b]
+                self.reg[reg_a] = remainder
+
         else:
             raise Exception("Unsupported ALU operation")
 
