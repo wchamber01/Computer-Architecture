@@ -11,6 +11,17 @@ CMP = 0b10100111
 CALL = 0b01010000
 RET = 0b00010001
 ADD = 0b10100000
+CMP = 0b10100111
+JMP = 0b01010100
+JEQ = 0b01010101
+JNE = 0b01010110
+AND = 0b10101000
+NOT = 0b01101001
+OR = 0b10101010
+XOR = 0b10101011
+SHL = 0b10101100
+SHR = 0b10101101
+MOD = 0b10100100
 
 
 class CPU:
@@ -24,6 +35,7 @@ class CPU:
         self.running = True
         self.reg[7] = 0xf4
         self.sp = self.reg[7]
+        self.fl = 0b00000000
         self.branchtable = {}
         self.branchtable[HLT] = self.op_hlt
         self.branchtable[LDI] = self.op_ldi
@@ -34,7 +46,17 @@ class CPU:
         self.branchtable[CALL] = self.op_call
         self.branchtable[RET] = self.op_ret
         self.branchtable[ADD] = self.op_add
-        # self.branchtable[CMP] = self.alu
+        self.branchtable[CMP] = self.op_cmp
+        self.branchtable[JMP] = self.op_jmp
+        self.branchtable[JEQ] = self.op_jeq
+        self.branchtable[JNE] = self.op_jne
+        self.branchtable[AND] = self.op_and
+        self.branchtable[NOT] = self.op_not
+        self.branchtable[OR] = self.op_or
+        self.branchtable[XOR] = self.op_xor
+        self.branchtable[SHL] = self.op_shl
+        self.branchtable[SHR] = self.op_shr
+        self.branchtable[MOD] = self.op_mod
 
     def ram_read(self, MAR):
         return self.ram[MAR]
@@ -83,6 +105,24 @@ class CPU:
     def op_add(self, operand_a, operand_b):
         self.alu('ADD', operand_a, operand_b)
 
+    def op_cmp(self, operand_a, operand_b):
+        self.alu('CMP', operand_a, operand_b)
+
+    def op_jmp(self, operand_a, operand_b):
+        self.pc = self.reg[operand_a]
+
+    def op_jeq(self, operand_a, operand_b):
+        if self.fl == 0b00000001:
+            self.op_jmp(operand_a, operand_b)
+        else:
+            self.pc += 2
+
+    def op_jne(self, operand_a, operand_b):
+        if self.fl != 0b00000001:
+            self.op_jmp(operand_a, operand_b)
+        else:
+            self.pc += 2
+
     def load(self, filename):
         """Load a program into memory."""
 
@@ -118,7 +158,13 @@ class CPU:
             self.reg[reg_a] = self.reg[reg_a] + self.reg[reg_b]
         elif op == "MUL":
             self.reg[reg_a] = self.reg[reg_a] * self.reg[reg_b]
-        # if op == "CMP":
+        elif op == "CMP":
+            if self.reg[reg_a] < self.reg[reg_b]:
+                self.fl = 0b00000100
+            elif self.reg[reg_a] > self.reg[reg_b]:
+                self.fl = 0b00000010
+            elif self.reg[reg_a] == self.reg[reg_b]:
+                self.fl = 0b00000001
         else:
             raise Exception("Unsupported ALU operation")
 
